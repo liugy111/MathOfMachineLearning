@@ -12,7 +12,7 @@ differentiable $f$ with convex domain is convex if and only if
 
 differentiable $f$ with convex domain is convex if and only if  $\nabla^2f(x) \geq 0 \text{ for all }x \in \bf dom \rm \text{ f}$
 
-#### Examples
+# Examples
 
 Examples of convex on $\bf R$:
 
@@ -80,7 +80,7 @@ Example: $f(X)=\log \det X$, 我们可以将其**转化为任意直线上的单�
 
 > 没有看懂这里的操作
 
-#### log-sum-exp (softmax function) is CONVEX!
+# log-sum-exp (softmax function) is CONVEX!
 
 $$
 f(x) = \log \sum_{k=1}^{n} \exp x_k
@@ -127,7 +127,7 @@ $$
 
 show that $f$ is obtained from simple convex functions by operations that preserve convexity
 
-- nonnegative weighted sum
+- nonnegative weighted sum (仿射变换)
 
 - composition with affine function
 
@@ -146,10 +146,10 @@ show that $f$ is obtained from simple convex functions by operations that preser
 
 - composition with scalar functions
 
-  - **Definition**: f(x) = h(g(x)),  f is convex if: 
+  - **Definition**: f(x) = h(g(x)),  $g : R^n → R \text{ and } h : R → R$, f is convex if: 
 
-    - g convex, h convex, $\tilde{h}$ nondecreasing
-    - g concave, h convex, $\tilde{ h }$ nonincreasing
+    - g convex, h convex, $\tilde{h}$ non-decreasing
+    - g concave, h convex, $\tilde{ h }$ non-increasing
 
     > extended-value extension $\tilde{f}$ of $f$ is: $\tilde{f}(x) = f(x), x \in \textbf{dom }\rm f, \tilde{f}(x) = \infty, x \notin \textbf{dom }f$
 
@@ -158,6 +158,12 @@ show that $f$ is obtained from simple convex functions by operations that preser
   - $1/g(x)$ is convex if $g$ is concave and positive
 
 - composition with vector
+
+  - **Definition**: f(x) = h(g(x)), $g : R^n → R^k \text{ and } h : R^k → R$, f is convex if: 
+    - g_i convex, h convex, $\tilde{h} $ non-decreasing in each argument
+    - g_i concave, h convex, $\tilde{h}$ non-increasing in each argument
+  - $\sum_{i=1}^m \log g_i(x)$ is concave if g_i are concave and positive
+  - $\log \sum_{i=1}^m \exp g_i(x)$ is  convex if g_i are convex
 
 - minimization
 
