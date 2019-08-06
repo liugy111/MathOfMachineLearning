@@ -1,3 +1,0 @@
-
-python demoPython.py
-cmd
