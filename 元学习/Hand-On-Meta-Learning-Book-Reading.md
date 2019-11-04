@@ -52,15 +52,15 @@ $$
 
 对于LSTM的forget gate:
 
-![](imgs/0.png)
+<img src="./imgs/0.png" style="zoom:60%;" />
 
 对于LSTM的input gate:
 
-![](imgs/1.png)
+<img src="./imgs/1.png" style="zoom:60%;" />
 
 LSTM的cell:
 
-![](imgs/2.png)
+<img src="./imgs/2.png" style="zoom:60%;" />
 
 # 2. Face and Audio Recognition Using Siamese Networks （Python）
 
@@ -132,7 +132,7 @@ loss = -tf.reduce_mean(tf.reshape(tf.reduce_sum(tf.multiply(y_one_hot,
 
 原型网络的另一个局限性是它们只使用平均值来确定中心，而**忽略了支持数据集的方差**。这就阻碍了当图像有噪音的时候模型的分类能力。这一限制是通过使用高斯原型网络（https://arxiv.org/abs/1708.02735）来克服的，它利用了类中的方差，通过使用高斯公式对嵌入点进行建模。
 
-![](imgs/3.png)
+<img src="./imgs/3.png" style="zoom:60%;" />
 
 So, in Gaussian prototypical networks, the output of the encoder will be embeddings（这点和传统原型网络相同）, as well as the covariance matrix（协方差矩阵）. Instead of using the full covariance matrix, we either include a radius or diagonal component from the covariance matrix along with the embeddings: 
 
@@ -150,11 +150,11 @@ Also, instead of using the covariance matrix directly, we use the inverse of a c
 
 如何把协方差矩阵编码到prototype中呢？对于类别c，prototype的计算公式：
 
-![](imgs/4.png)
+<img src="./imgs/4.png" style="zoom:60%;" />
 
 度量函数：
 
-![](imgs/5.png)
+<img src="./imgs/5.png" style="zoom:60%;" />
 
 ## Semi-Prototypical Networks (To compute the class prototypes of these unlabeled data points)
 
@@ -182,4 +182,3 @@ https://arxiv.org/pdf/1803.00676.pdf
 
 
 ## 4.3 Relation networks in zero-shot learning
-
