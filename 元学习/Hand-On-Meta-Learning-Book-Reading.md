@@ -81,11 +81,11 @@ $$
 
 # 3. Prototypical Networks and Their Variants
 
-## 原型聚类算法（西瓜书）
+## 3.1 原型聚类算法（西瓜书）
 
 原型聚类算法假设聚类结构可以通过一组原型刻画。通常情形下，算法先对原型进行初始化，然后对原型进行迭代更新求解。常见的原型聚类算法为K-means。
 
-## 原型网络
+## 3.2 原型网络
 
 官方torch代码: [Github Here](https://github.com/orobix/Prototypical-Networks-for-Few-shot-Learning-PyTorch/blob/master/src/train.py )
 
@@ -106,7 +106,7 @@ TF代码实现：
 ```python
 embedding_dimension = tf.shape(support_set_embeddings)[-1] 
 # support_set_embeddings是卷积网络flatten之后的输出
-# embedding_dimension是人为设置的，e.g. 64, 128...
+# embedding_dimension的shape是人为设置的，e.g. 64, 128...
 
 class_prototype = tf.reduce_mean(tf.reshape(support_set_embeddings, 
                                             [num_classes, 
@@ -126,7 +126,7 @@ loss = -tf.reduce_mean(tf.reshape(tf.reduce_sum(tf.multiply(y_one_hot,
                                   [-1]))
 ```
 
-## Gaussian prototypical network
+## 3.3 Gaussian prototypical network
 
 尽管**原型网络**产生了非常好的成果，但仍然有一些局限性。第一个问题是**缺乏泛化**。原型网络在Omniglot 数据集上表现的很好，因为数据集中的所有图像都是一个字符的图像，因此具有一些相似的特征。然而，如果我们尝试利用这个模型来对不同种类的猫进行分类，它就不会给我们准确的结果了。猫和字符图像之间具有较少的共性，可用于将图像映射到相应度量空间的常见特征数量几乎是可以忽略不计的。
 
@@ -156,7 +156,7 @@ Also, instead of using the covariance matrix directly, we use the inverse of a c
 
 <img src="./imgs/5.png" style="zoom:60%;" />
 
-## Semi-Prototypical Networks (To compute the class prototypes of these unlabeled data points)
+## 3.4 Semi-Prototypical Networks (To compute the class prototypes of these unlabeled data points)
 
 https://arxiv.org/pdf/1803.00676.pdf 
 
@@ -171,14 +171,126 @@ https://arxiv.org/pdf/1803.00676.pdf
   - to a neural network 是啥意思？
 - Based on this threshold, we add or ignore the unlabeled examples to the class prototypes. 
 
-# 4. Relation and Matching Networks Using TensorFlow
+# 4. Relation and Matching Networks
 
-## 4.1 Relation networks in one-shot learning
+## 4.1 Relation Network (Encoder + Feature Concatenation, One/Few/Zero-shot Learning)
+
+之前的few-shot工作都是预先指定好度量方式的，如欧式距离或余弦距离，学习部分主要体现在特征嵌入方面，但是该论文同时学习了特征的嵌入及非线性度量矩阵（相似度函数），这些都是端到端的调整。通过学习到的相似性矩阵有着比人为选定的矩阵更具有灵活性，更能捕获到特征之间的相似性。 
+
+<img src="./imgs/6.png" style="zoom:67%;" />
+
+经过 concatenation function Z 之后，再用关系函数 r_{ij} 确定当前样本预测类别 i 与 j 的相似程度：
+
+<img src="./imgs/7.png" style="zoom:20%;" />
+
+在 zero-shot learning 中，虽然没有训练样本x_i，但是有meta information v_c，所以也可以用relation network：
+
+<img src="./imgs/8.png" style="zoom:20%;" />
+
+损失函数为均方误差，当回归问题处理。
+
+> 以下内容摘自：[原作者介绍](https://zhuanlan.zhihu.com/p/35379027 )
+>
+> 我们把输出的relation score看做是一个从0到1的数值。0就代表极不相似，而1则代表完全相似。因此，我们就非常直接的采用平方差MSE作为网络训练的loss。 
+>
+> 只做少样本学习不是这个模型的全部，我们很容易的把它做一些改变，就能直接用于零样本学习。零样本学习和少样本学习不一样的地方在于零样本学习不给样本，而是给出一个代表某一类物体语义的嵌入向量，我们要直接利用这个嵌入向量来对物体做分类。那么，在我们的关系网络中，我们只需要把训练样本（support set）改成这个语义嵌入向量就可以来做零样本学习了。 
+
+## 4.2 Matching Network (One-shot Learning, Google DeepMind)
+
+<img src="./imgs/9.png " style="zoom:13%;" />
+
+<img src="./imgs/10.png" style="zoom:15%;" />
+
+对于support set point 和 query set point 用的是两种 encoder：f & g。
+
+a 是一种注意力机制（attention matrix）。
+
+y 是对 support set point label 的独热编码。
+
+<img src="./imgs/11.png" style="zoom:67%;" />
+
+原论文中，support set encoder **g** 是双向LSTM，query set encoder **f** 是LSTM。 
+
+> 以下内容摘自：[别人的paper-notes](https://zhuanlan.zhihu.com/p/32101204 )
+>
+> 有人可能会疑惑为什么要用LSTM，像LSTM、RNN这种模型都要记住一些东西，可是这些样本的类别又不同，所以是想要记住什么？我的理解是将各个类别的样本作为序列输入到LSTM中，是为了模型纵观所有的样本去自动选择合适的特征去度量。
+>
+> 对测试集进行编码的公式：(3-6)是 attLSTM 的搭建方法
+>
+> ![](https://pic3.zhimg.com/80/v2-96de94677b13f7dd79205d35bc9adc46_hd.jpg)
+>
+> K代表迭代了K次。
+
+---
+
+> 以下内容摘自：[Karpthy的github.io](https://github.com/karpathy/paper-notes/blob/master/matching_networks.md)，强调了样本顺序的重要性。
+>
+> It's odd that the **order** is not mentioned, I assume it's random? This is a bit gross because order matters to a bidirectional LSTM; you'd get different embeddings if you permute the examples. 
+
+---
+
+在 [./codes/matchingNet.py ](./codes/matchingNet.py)中，我记录了repo：[PyTorch 实现 Matching Network](https://github.com/gitabcworld/MatchingNetworks/blob/master/models/MatchingNetwork.py) 的代码笔记，与原文有些许不同，这位开发者将 f 和 g 用同一个网络进行编码（CNN+LSTM）。
 
 
 
-## 4.2 Relation networks in few-shot learning
+# 5. Memory-Augmented Neural Networks (MAML)
 
+## 5.1 Neural Turing Machine
 
+ 神经图灵机的本质是一个 **使用外部存储矩阵** 进行 **attentive interaction** 机制的RNN。
 
-## 4.3 Relation networks in zero-shot learning
+<img src="./imgs/12.png" style="zoom: 33%;" />
+
+**不可以用index**去获取存储矩阵的某个值，因为离散的index不可导，不能用梯度下降法。
+
+于是设计读写操作：假如把记忆看作是一个 **N×M** 的矩阵M_t，t表示当前时刻，表示记忆会随着时间发生变化。
+
+---
+
+### 5.1.1 读操作：注意力机制
+
+<img src="./imgs/13.png" style="zoom: 33%;" />
+
+我们的读过程就是生成一个定位权值向量 w_t，长度为N，表示N个位置对应的记忆权值大小，最后读出的记忆向量 r_t 为：
+$$
+r_t= \sum_i^N w_t(i) M_{t}(i) \text{ (注意力机制), 其中 }\sum_iw_t(i)=1
+$$
+
+---
+
+### 5.1.2 写操作 (以下摘自[CSDN](https://blog.csdn.net/ppp8300885/article/details/80383246 ))
+
+神经图灵机的写过程参考了LSTM的门的概念：先用输入门决定增加的信息，再用遗忘门决定要丢弃的信息，最后用更新门加上增加的信息并减去丢弃的信息。具体来说，神经图灵机会生成一个**擦除向量** e_t (erase vector) 和一个**增加向量** a_t (add vector)，长度都为N，向量中每个元素的值大小范围从0到1，表示要增加或者删除的信息。对于写记忆过程，神经图灵机首先执行一个擦除操作，擦除程度的大小同样由向量 w_t 决定：
+$$
+M_t'(i)=M_{t-1}(i)(1-w_t(i)e_t(i))
+$$
+这个操作表示从t−1时刻的记忆中丢弃了一些信息，若 w_t 和 e_t 同时为0，则表示记忆没有丢弃信息，当前记忆与t−1时刻保持不变。
+
+执行完擦除后，然后执行增加操作：
+$$
+M_t(i)=M'_t(i)+w_t(i)a_t(i)
+$$
+这步表示在丢弃一些信息后需要新增的信息，同样，若 w_t ​和 a_t ​都为0，表示当前记忆无新增，与擦除后的记忆保持一致。
+
+e_t ​和 a_t ​都是由控制器给出，而控制器基本上由神经网络实现，可以是LSTM，也可以是MLP。
+
+由于整个过程都是都是矩阵的加减乘除，所有的读写操作都是可微分的，因此我们可以用梯度下降法训练整个参数模型。但是接下来，我们需要确定 w_t 定位向量，由于这个向量直接决定着当前输入与记忆的相关性，因此神经图灵机在生成 w_t 向量上做了很多工作。
+
+---
+
+### 5.1.3 寻址：训练合适的weight vector (鸽)
+
+#### A. Content-based Addressing
+
+#### B. Location-based Addressing
+
+##### B.1 Interpolation
+
+##### B.2 Convolution Shift
+
+##### B.3 Sharpening
+
+##### B.4 代码实现
+
+---
+
