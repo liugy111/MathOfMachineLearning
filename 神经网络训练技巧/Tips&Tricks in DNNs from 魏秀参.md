@@ -2,9 +2,11 @@
 
 # 1. data augmentation
 
+<img src="http://p3.pstatp.com/large/pgc-image/1527060447020a2a66c9196" style="zoom:50%;" />
+
 ## 1.1 Horizontal/Vertical Flip：水平/垂直翻转
 
-## 1.2 Random Crops
+## 1.2 Random Crops：随机裁剪
 
 ## 1.3 Color Jittering (HSV Color Space)
 
@@ -20,7 +22,7 @@
 
 ## 1.4 Shift：平移变换
 
-## 1.5 Rotation/Reflection：旋转/仿射变换
+## 1.5 Rotation：旋转
 
 ## 1.6 Noise：高斯噪声、模糊处理
 
@@ -46,11 +48,34 @@ $$
 
 Fancy PCA Implementation: see [[my python code here]](./fancypca.py)
 
-# pre-processing on images
+# 2. pre-processing on images
 
+Please note that, we describe these pre-processing here just for completeness. In practice, these transformations are not used with Convolutional Neural Networks. However, it is also very important to zero-center the data, and it is common to see normalization of every pixel as well. 
 
+## 2.1 Normalization
 
-# initializations of Networks
+```python
+# normalizes each dimension so that 
+# the min and max along the dimension is -1 and 1 respectively
+X -= np.mean(X, axis = 0) # zero-center
+X /= np.std(X, axis = 0) # normalize
+```
+
+It only makes sense to apply this pre-processing if you have a reason to believe that different input features have different scales (or units), but they should be of approximately equal importance to the learning algorithm. In case of images, the relative scales of pixels are already approximately equal (and in range from 0 to 255), so it is not strictly necessary to perform this additional pre-processing step. 
+
+## 2.2 PCA Whitening
+
+```python
+X -= np.mean(X, axis = 0) # zero-center
+cov = np.dot(X.T, X) / X.shape[0] # compute the covariance matrix
+U,S,V = np.linalg.svd(cov) # compute the SVD factorization of the data covariance matrix
+Xrot = np.dot(X, U) # decorrelate the data
+Xwhite = Xrot / np.sqrt(S + 1e-5) # divide by the eigenvalues (which are square roots of the singular values)
+```
+
+Note that here it adds 1e-5 (or a small constant) to prevent division by zero. One weakness of this transformation is that it can greatly exaggerate the noise in the data, since it stretches all dimensions (including the irrelevant dimensions of tiny variance that are mostly noise) to be of equal size in the input. This can in practice be mitigated by stronger smoothing (i.e., increasing 1e-5 to be a larger number). 
+
+# 3. Initializations of Networks
 
 
 
